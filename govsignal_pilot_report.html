@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GovSignal Radar - 银行价值探测报告 (试点版)</title>
+    <style>
+        :root {
+            --bg-color: #f4f7f9;
+            --card-bg: #ffffff;
+            --text-main: #2c3e50;
+            --text-muted: #7f8c8d;
+            --primary: #3498db;
+            --p0: #e74c3c;
+            --p1: #f39c12;
+            --p2: #95a5a6;
+            --bank2gov: #ff4d4f;
+            --bank2gov2b: #1890ff;
+            --bank2gov2c: #52c41a;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            max-width: 1300px;
+            width: 100%;
+        }
+        header {
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        h1 {
+            font-size: 24px;
+            color: #1a1a1a;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+        .filter-bar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+            justify-content: center;
+        }
+        .filter-group {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            border-right: 1px solid #eee;
+            padding-right: 15px;
+        }
+        .filter-group:last-child { border: none; }
+        .label {
+            font-size: 13px;
+            font-weight: bold;
+            color: var(--text-muted);
+            margin-right: 5px;
+        }
+        .chip {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: all 0.2s;
+            background: #eee;
+            color: #666;
+        }
+        .chip.active {
+            color: white;
+            font-weight: bold;
+        }
+        .chip[data-type="p0"].active { background: var(--p0); }
+        .chip[data-type="p1"].active { background: var(--p1); }
+        .chip[data-type="p2"].active { background: var(--p2); }
+        .chip[data-type="b2g"].active { background: var(--bank2gov); }
+        .chip[data-type="b2b"].active { background: var(--bank2gov2b); }
+        .chip[data-type="b2c"].active { background: var(--bank2gov2c); }
+
+        .radar-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .radar-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border-top: 4px solid #ddd;
+        }
+        .card-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 13px;
+        }
+        .stat-val {
+            font-weight: bold;
+        }
+
+        .signal-list {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        th {
+            background: #f8f9fa;
+            text-align: left;
+            padding: 12px 15px;
+            border-bottom: 2px solid #eee;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+            vertical-align: top;
+        }
+        tr:hover { background: #fcfcfc; }
+        .tag {
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 11px;
+            color: white;
+            margin-right: 5px;
+            display: inline-block;
+        }
+        .tag-p0 { background: var(--p0); }
+        .tag-p1 { background: var(--p1); }
+        .tag-p2 { background: var(--p2); }
+        .tag-b2g { background: var(--bank2gov); }
+        .tag-b2b { background: var(--bank2gov2b); }
+        .tag-b2c { background: var(--bank2gov2c); }
+
+        .date { color: var(--text-muted); font-family: monospace; }
+        .title-link {
+            color: var(--text-main);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .title-link:hover { color: var(--primary); }
+        .insight {
+            font-size: 13px;
+            color: #555;
+            background: #fdfdfd;
+            border-left: 3px solid #ddd;
+            padding: 8px 12px;
+            margin-top: 8px;
+            line-height: 1.5;
+        }
+        .insight-b2g { border-left-color: var(--bank2gov); }
+        .insight-b2b { border-left-color: var(--bank2gov2b); }
+        .insight-b2c { border-left-color: var(--bank2gov2c); }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>GovSignal Radar <span style="font-weight: 300; opacity: 0.7;">| 银行价值探测报告 (v0.2)</span></h1>
+        <div class="subtitle">试点目标：江苏省人民政府 - 政策文件栏目 | 已集成 L2 银行价值翻译逻辑</div>
+    </header>
+
+    <div class="filter-bar">
+        <div class="filter-group">
+            <span class="label">优先级</span>
+            <div class="chip" data-type="p0">P0 (强)</div>
+            <div class="chip" data-type="p1">P1 (中)</div>
+            <div class="chip" data-type="p2">P2 (弱)</div>
+        </div>
+        <div class="filter-group">
+            <span class="label">银行价值</span>
+            <div class="chip" data-type="b2g">Bank2Gov</div>
+            <div class="chip" data-type="b2b">Bank2Gov2B</div>
+            <div class="chip" data-type="b2c">Bank2Gov2C</div>
+        </div>
+        <div class="filter-group" style="border:none">
+            <div class="chip" id="reset-btn" style="background:#fff; border:1px solid #ccc">重置</div>
+        </div>
+    </div>
+
+    <div class="radar-grid">
+        <div class="radar-card" style="border-top-color: var(--bank2gov)">
+            <div class="card-title">Bank2Gov <small>资金机会</small></div>
+            <div class="stat-row"><span>探测记录数</span><span class="stat-val" id="cnt-b2g">0</span></div>
+            <div class="stat-row"><span>最高优先级</span><span class="stat-val" style="color:var(--p0)">P0</span></div>
+        </div>
+        <div class="radar-card" style="border-top-color: var(--bank2gov2b)">
+            <div class="card-title">Bank2Gov2B <small>企业机会</small></div>
+            <div class="stat-row"><span>探测记录数</span><span class="stat-val" id="cnt-b2b">0</span></div>
+            <div class="stat-row"><span>最高优先级</span><span class="stat-val" style="color:var(--p0)">P0</span></div>
+        </div>
+        <div class="radar-card" style="border-top-color: var(--bank2gov2c)">
+            <div class="card-title">Bank2Gov2C <small>个人机会</small></div>
+            <div class="stat-row"><span>探测记录数</span><span class="stat-val" id="cnt-b2c">0</span></div>
+            <div class="stat-row"><span>最高优先级</span><span class="stat-val" style="color:var(--p1)">P1</span></div>
+        </div>
+    </div>
+
+    <div class="signal-list">
+        <table>
+            <thead>
+                <tr>
+                    <th width="110">日期</th>
+                    <th>信号标题 & 价值转换</th>
+                    <th width="150">价值标签</th>
+                </tr>
+            </thead>
+            <tbody id="data-body">
+                <!-- Data injected by JS -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    const data = [
+        {t: "省政府办公厅关于印发江苏省落实水资源刚性约束制度考核实施方案的通知", d: "2026-05-18", p: "P1", v: ["b2b"], u: "http://www.jiangsu.gov.cn/art/2026/5/18/art_46144_11772724.html", i: "水资源约束 → 涉及工业用水限额 → 影响高耗水企业生产计划 → 关注相关企业的绿色信贷需求。"},
+        {t: "省政府办公厅关于印发江苏省人民政府2026年度重大行政决策事项目录的通知", d: "2026-05-18", p: "P2", v: [], u: "http://www.jiangsu.gov.cn/art/2026/5/18/art_46144_11772710.html", i: "例行公开，低商业价值。"},
+        {t: "省政府关于张胜等职务任免的通知", d: "2026-05-18", p: "P2", v: [], u: "http://www.jiangsu.gov.cn/art/2026/5/18/art_46143_11772701.html", i: "人事变动，仅作背景记录。"},
+        {t: "省政府关于陈安等职务任免的通知", d: "2026-04-29", p: "P2", v: [], u: "http://www.jiangsu.gov.cn/art/2026/4/29/art_46143_11764013.html", i: "人事变动，仅作背景记录。"},
+        {t: "省政府关于连云港市所辖各县（区）征地区片综合地价执行标准的批复", d: "2026-04-29", p: "P0", v: ["b2b"], u: "http://www.jiangsu.gov.cn/art/2026/4/29/art_46143_11764007.html", i: "地价标准确定 → 触发地块出让 → 关注当地房产开发商、基建公司融资需求。"},
+        {t: "省政府关于盐城市所辖各县（市、区）征地区片综合地价执行标准的批复", d: "2026-04-29", p: "P0", v: ["b2b"], u: "http://www.jiangsu.gov.cn/art/2026/4/29/art_46143_11764001.html", i: "地价标准确定 → 触发地块出让 → 关注当地房产开发商、基建公司融资需求。"},
+        {t: "省政府关于徐州市所辖各县（市、区）征地区片综合地价执行标准的批复", d: "2026-04-29", p: "P0", v: ["b2b"], u: "http://www.jiangsu.gov.cn/art/2026/4/29/art_46143_11763996.html", i: "地价标准确定 → 触发地块出让 → 关注当地房产开发商、基建公司融资需求。"},
+        {t: "省政府关于无锡市所辖各区（市）征地区片综合地价执行标准的批复", d: "2026-04-29", p: "P0", v: ["b2b"], u: "http://www.jiangsu.gov.cn/art/2026/4/29/art_46143_11763988.html", i: "地价标准确定 → 触发地块出让 → 关注当地房产开发商、基建公司融资需求。"},
+        {t: "省政府办公厅关于印发江苏省治理交通拥堵专项行动方案的通知", d: "2026-04-15", p: "P1", v: ["b2b"], u: "http://www.jiangsu.gov.cn/art/2026/4/15/art_46144_11757928.html", i: "交通治理专项 → 涉及智能交通、基建改造 → 关注相关工程承包商、设备供应商。"},
+        {t: "省政府办公厅印发关于加快全省建筑业转型升级若干措施的通知", d: "2026-04-15", p: "P0", v: ["b2b"], u: "http://www.jiangsu.gov.cn/art/2026/4/15/art_46144_11757921.html", i: "建筑业升级 → 推动数字化改造 → 关注建筑业转型企业专项贷款需求。"},
+        {t: "省政府关于同意设立张家港技师学院的批复", d: "2026-04-15", p: "P1", v: ["b2g", "b2c"], u: "http://www.jiangsu.gov.cn/art/2026/4/15/art_46143_11757914.html", i: "新设机构 → (B端) 建设资金结算 → (C端) 教职员工入职薪卡。"},
+        {t: "省政府关于宿迁市所辖各县（区）征地区片综合地价执行标准的批复", d: "2026-04-15", p: "P0", v: ["b2b"], u: "http://www.jiangsu.gov.cn/art/2026/4/15/art_46143_11757898.html", i: "地价标准确定 → 触发地块出让 → 关注当地房产开发商、基建公司融资需求。"},
+        {t: "省政府关于南通市所辖各县（市、区）征地区片综合地价执行标准的批复", d: "2026-04-15", p: "P0", v: ["b2b"], u: "http://www.jiangsu.gov.cn/art/2026/4/15/art_46143_11757894.html", i: "地价标准确定 → 触发地块出让 → 关注当地房产开发商、基建公司融资需求。"},
+        {t: "省政府关于苏州市所辖各区（市）征地区片综合地价执行标准的批复", d: "2026-04-15", p: "P0", v: ["b2b"], u: "http://www.jiangsu.gov.cn/art/2026/4/15/art_46143_11757890.html", i: "地价标准确定 → 触发地块出让 → 关注当地房产开发商、基建公司融资需求。"},
+        {t: "省政府关于南京市所辖各区征地区片综合地价执行标准的批复", d: "2026-04-15", p: "P0", v: ["b2b"], u: "http://www.jiangsu.gov.cn/art/2026/4/15/art_46143_11757886.html", i: "地价标准确定 → 触发地块出让 → 关注当地房产开发商、基建公司融资需求。"},
+        {t: "省政府关于进一步完善投融资机制加快高速公路和干线航道建设的意见", d: "2026-04-15", p: "P0", v: ["b2g", "b2b"], u: "http://www.jiangsu.gov.cn/art/2026/4/15/art_46143_11757872.html", i: "投融资机制优化 → (B端) 基础设施专项融资 → (G端) 资金监管与结算。"},
+        {t: "省政府关于聘任马明龙同志为省政府参事的通知", d: "2026-04-15", p: "P2", v: [], u: "http://www.jiangsu.gov.cn/art/2026/4/15/art_46143_11757854.html", i: "人事变动，仅作背景记录。"},
+        {t: "省政府关于邱志强等职务任免的通知", d: "2026-04-08", p: "P2", v: [], u: "http://www.jiangsu.gov.cn/art/2026/4/8/art_46143_11755124.html", i: "人事变动，仅作背景记录。"},
+        {t: "江苏省2025年政府信息公开工作年度报告", d: "2026-03-31", p: "P2", v: [], u: "http://www.jiangsu.gov.cn/art/2026/3/31/art_46144_11752118.html", i: "例行报告，低商业价值。"},
+        {t: "省政府办公厅关于进一步完善设区市与市辖区财政体制的意见", d: "2026-03-31", p: "P0", v: ["b2g"], u: "http://www.jiangsu.gov.cn/art/2026/3/31/art_46144_11752057.html", i: "财政体制改革 → 触发资金账户重新归集与监管模式调整 → 争取资金托管机会。"},
+        {t: "省政府关于常州市所辖各区（市）征地区片综合地价执行标准的批复", d: "2026-03-31", p: " a-C2026-03-31", p: "P0", v: ["b2b"], u: "http://www.jiangsu.gov.cn/art/2026/3/31/art_46143_11752052.html", i: "地价标准确定 → 触发地块出让 → 关注当地房产开发商、基建公司融资需求。"},
+        {t: "省政府关于泰州市所辖各区（市）征地区片综合地价执行标准的批复", d: "2026-03-31", p: "P0", v: ["b2b"], u: "http://www.jiangsu.gov.cn/art/2026/3/31/art_46143_11752048.html", i: "地价标准确定 → 触发地块出让 → 关注当地房产开发商、基建公司融资需求。"},
+        {t: "省政府关于扬州市所辖各县（市、区）征地区片综合地价执行标准的批复", d: "2026-03-31", p: "P0", v: ["b2b"], u: "http://www.jiangsu.gov.cn/art/2026/3/31/art_46143_11752042.html", i: "地价标准确定 → 触发地块出让 → 关注当地房产开发商、基建公司融资需求。"},
+        {t: "江苏省人民政府关于公布第二批江苏省历史文化街区的通知", d: "2026-03-31", p: "P1", v: ["b2b"], u: "http://www.jiangsu.gov.cn/art/2026/3/31/art_46143_11751934.html", i: "文化街区公布 → 涉及周边翻新与商业开发 → 关注当地小微商户贷。"},
+        {t: "省政府关于印发江苏省国民经济和社会发展第十五个五年规划纲要的通知", d: "2026-03-31", p: "P0", v: ["b2g", "b2b", "b2c"], u: "http://www.jiangsu.gov.cn/art/2026/3/31/art_46143_11751927.html", i: "顶层规划 → 决定未来 5 年资金投向与产业重点 → 全方位业务布局机会。"},
+        {t: "省政府关于设置江苏建筑职业技术大学的通知", d: "2026-03-03", p: "P1", v: ["b2g", "b2c"], u: "http://www.jiangsu.gov.cn/art/2026/3/3/art_46143_11734765.html", i: "新设大学 → (B端) 建设资金结算 → (C端) 教职员工入职薪卡。"},
+        {t: "省政府关于开展苏南重点城市要素市场化配置综合改革试点的通知", d: "2026-03-03", p: "P0", v: ["b2g", "b2b"], u: "http://www.jiangsu.gov.cn/art/2026/3/3/art_46143_11734737.html", i: "要素配置改革 → 触发资金流向变化 → 关注试点城市金融服务创新机会。"},
+        {t: "省政府办公厅关于促进江苏省政府投资基金高质量发展的实施意见", d: "2026-03-02", p: "P0", v: ["b2g"], u: "http://www.jiangsu.gov.cn/art/2026/3/2/art_46144_11734281.html", i: "政府投资基金 → 资金规模大 → 争取基金账户托管及资金管理产品。"},
+        {t: "省政府关于淮阴工学院更名为淮安大学的通知", d: "2026-03-02", p: "P1", v: ["b2g", "b2c"], u: "http://www.jiangsu.gov.cn/art/2026/3/2/art_46143_11734238.html", i: "更名升格 → 带来资金注入与人才引进 → 关注校园零售客群增长。"},
+        {t: "省政府关于王伟等职务任免的通知", d: "2026-02-14", p: "P2", v: [], u: "http://www.jiangsu.gov.cn/art/2026/2/14/art_46143_11730736.html", i: "人事变动，仅作背景记录。"},
+        {t: "省政府办公厅关于印发江苏省生态空间管控区域管理办法的通知", d: "2026-02-11", p: "P1", v: ["b2b"], u: "http://www.jiangsu.gov.cn/art/2026/2/11/art_46144_11728947.html", i: "生态管控 → 限制部分产业开发 → 关注相关企业的转型融资需求。"},
+        {t: "省政府关于同意江苏洋口港港务有限公司液体化工码头G2、G3泊位等对外开放的批复", d: "2026-02-11", p: "P1", v: ["b2b"], u: "http://www.jiangsu.gov.cn/art/2026/2/11/art_46143_11728937.html", i: "泊位开放 → 贸易量增加 → 关注港口贸易融资、结售汇需求。"},
+        {t: "省政府关于全省“十五五”期间年森林采伐限额的批复", d: "2026-02-11", p: "P1", v: ["b2b"], u: "http://www.jiangsu.gov.cn/art/2026/2/11/art_46143_11728930.html", i: "采伐限额 → 影响木材产业链 → 关注相关企业营运资金贷款。"},
+        {t: "省政府关于同意将宿迁市列为江苏省历史文化名城的批复", d: "2026-02-11", p: "P1", v: ["b2b"], u: "http://www.jiangsu.gov.cn/art/2026/2/11/art_46143_11728923.html", i: "历史文化名城 → 触发旧城改造 → 关注当地基建公司与商业开发。"},
+        {t: "省政府关于表彰2025年江苏技术技能大奖获奖人员的决定", d: "2026-02-11", p: "P2", v: ["b2c"], u: "http://www.jiangsu.gov.cn/art/2026/2/11/art_46143_11728912.html", i: "表彰决定 → 高端人才名单 → 潜在高净值个人客群。"},
+        {t: "省政府关于蒋同进等职务任免的通知", d: "2026-02-11", p: "P2", v: [], u: "http://www.jiangsu.gov.cn/art/2026/2/11/art_46143_11728901.html", i: "人事变动，仅作背景记录。"},
+        {t: "省政府关于尚庆飞免职的通知", d: "2026-02-11", p: "P2", v: [], u: "http://www.jiangsu.gov.cn/art/2026/2/11/art_4614 la-C28891.html", i: "人事变动，仅作背景记录。"},
+        {t: "省政府办公厅印发关于进一步优化民营经济金融服务若干措施的通知", d: "2026-02-10", p: "P0", v: ["b2b"], u: "http://www.jiangsu.gov.cn/art/2026/2/10/art_46144_11728022.html", i: "民营金融优化 → 释放信贷空间 → 重点推广普惠金融及专属信贷产品。"},
+        {t: "省政府办公厅印发关于优化金融生态环境促进金融业高质量发展若干措施的通知", d: "2026-02-10", p: "P0", v: ["b2g"], u: "http://www.jiangsu.gov.cn/art/2026/2/10/art_46144_11728012.html", i: "金融生态优化 → 涉及金融机构监管与服务标准 → 关注监管端沟通机会。"},
+        {t: "江苏省人民政府办公厅2025年政府信息公开工作年度报告", d: "2026-01-30", p: "P2", v: [], u: "http://www.jiangsu.gov.cn/art/2025/12/29/art_46144_11724075.html", i: "例行报告，低商业价值。"},
+        {t: "省政府印发关于科技强农若干政策措施的通知", d: "2026-01-30", p: "P1", v: ["b2b", "b2c"], u: "http://www.jiangsu.gov.cn/art/2026/1/30/art_46143_11723692.html", i: "科技强农 → 农业科技企业 → 涉农贷款及现代农业设备融资。"},
+        {t: "省政府关于陆华良等职务任免的通知", d: "2026-01-23", p: "P2", v: [], u: "http://www.jiangsu.gov.cn/art/2026/1/23/art_46143_11721152.html", i: "人事变动，仅作背景记录。"},
+        {t: "省政府办公厅关于印发省政府2026年立法工作计划的通知", d: "2026-01-23", p: "P2", v: [], u: "http://www.jiangsu.gov.cn/art/2026/1/23/art_46144_11721136.html", i: "立法计划，长线观察，低瞬时价值。"},
+        {t: "省政府办公厅关于印发江苏省水运口岸码头泊位开放管理服务办法的通知", d: "2026-01-23", p: "P1", v: ["b2b"], u: "http://www.jiangsu.gov.cn/art/2026/1/23/art_46144_11721124.html", i: "泊位开放 → 贸易流向变更 → 关注港口物流企业结算需求。"},
+        {t: "​省政府关于2024年度江苏省科学技术奖励的决定", d: "2026-01-23", p: "P2", v: ["b2b"], u: "http://www.jiangsu.gov.cn/art/2026/1/23/art_46143_11721067.html", i: "科技奖励 → 标杆企业名单 → 潜在高端企业客户。"},
+        {t: "省政府关于印发江苏省公共信用信息管理办法的通知", d: "2026-01-23", p: "P1", v: ["b2b"], u: "http://www.jiangsu.gov.cn/art/2026/1/23/art_46143_11721061.html", i: "信用管理 → 影响企业信贷评级 → 优化信贷审批逻辑。"},
+        {t: "省政府关于公布江苏省征地区片综合地价最低标准的通知", d: "2026-01-23", p: "P0", v: ["b2b"], u: "http://www.jiangsu.gov.cn/art/2026/1/23/art_46143_11721042.html", i: "地价最低标准 → 影响全省土地成本 → 房产/基建板块核心信号。"},
+        {t: "省政府关于印发江苏省“人工智能＋”行动方案的通知", d: "2026-01-13", p: "P0", v: ["b2b"], u: "http://www.jiangsu.gov.cn/art/2026/1/13/art_46143_11715645.html", i: "AI 专项方案 → 触发高新企业研发投入 → 推送科技贷/研发贷。"},
+        {t: "省政府办公厅关于进一步推进城市公共交通高质量发展的意见", d: "2025-12-29", p: "P1", v: ["b2b"], u: "http://www.jiangsu.gov.cn/art/2025/12/29/art_46144_11701959.html", i: "公共交通升级 → 涉及车辆采购与基建 → 关注公交公司及供应商。"},
+        {t: "省政府办公厅印发关于进一步强化食品安全全链条监管若干措施的通知", d: "2025-12-29", p: "P1", v: ["b2b"], u: "http://www.jiangsu.gov.cn/art/2025/12/29/art_46144_11701903.html", i: "食品安全监管 → 触发企业设备升级 → 关注食品工业相关贷款。"},
+        {t: "省政府办公厅关于支持优质企业增资扩产提质增效的实施意见", d: "2025-12-29", p: "P0", v: ["b2b"], u: "http://www.jiangsu.gov.cn/art/2025/12/29/art_46144_11701882.html", i: "增资扩产 → 核心信贷机会 → 重点走访优质扩产企业。"},
+        {t: "省政府办公厅关于进一步加强县域特色优势产业发展的实施意见", d: "2025-12-29", p: "P0", v: ["b2b"], u: "http://www.jiangsu.gov.cn/art/2025/12/29/art_46144_11701869.html", i: "县域产业升级 → 县域经济机会 → 重点关注县域龙头企业。"},
+        {t: "省政府办公厅转发省财政厅关于规范政府和社会资本合作存量项目建设和运营实施意见的通知", d: "2025-12-29", p: "P0", v: ["b2g", "b2b"], u: "http://www.jiangsu.gov.cn/art/2025/12/29/art_46144_11701859.html", i: "PPP 项目存量规范 → 资金重新结算 → 关注项目融资还款及再融资。"},
+        {t: "省政府办公厅关于印发江苏省里下河地区滞涝圩管理办法的通知", d: "2025-12-29", p: "P1", v: ["b2b"], u: "http://www.jiangsu.gov.cn/art/2025/12/29/art_46144_11701851.html", i: "水利管理 → 涉及区域整治 → 关注相关工程公司。"},
+        {t: "省政府办公厅关于印发江苏省化工产业结构调整限制和淘汰目录（2025年本）的通知", d: "2025-12-29", p: "P0", v: ["b2b"], u: "http://www.jiangsu.gov.cn/art/2025/12/29/art_46144_11701827.html", i: "产业淘汰目录 → 风险预警 → 审查化工类客户资产质量并调整授信。"},
+        {t: "省政府关于划定南京市雨花台烈士陵园烈士纪念设施保护范围的批复", d: "2025-12-29", p: "P2", v: [], u: "http://www.jiangsu.gov.cn/art/2025/12/29/art_46143_11701777.html", i: "特定范围划定，商业价值低。"},
+        {t: "省政府关于公布江苏省第十八届哲学社会科学优秀成果奖的决定", d: "2025-12-29", p: "P2", v: ["b2c"], u: "http://www.jiangsu.gov.cn/art/2025/12/29/art_46143_11701759.html", i: "学术获奖 → 潜在高端知识分子客群。"},
+        {t: "省政府关于授予30家台资企业江苏省紫峰奖的决定", d: "2025-12-29", p: "P1", v: ["b2b"], u: "http://www.jiangsu.gov.cn/art/2025/12/29/art_461S_11701659.html", i: "优质台企名单 → 重点维护高净值企业客群。"},
+        {t: "省政府关于授予第七届“江苏慈善奖”的决定", d: "2025-12-26", p: "P2", v: [], u: "http://www.jiangsu.gov.cn/art/2025/12/26/art_46143_11700025.html", i: "慈善奖项，低直接商业价值。"},
+        {t: "省政府关于授予2025年江苏省省长质量奖的决定", d: "2025-12-24", p: "P1", v: ["b2b"], u: "http://www.jiangsu.gov.cn/art/2025/12/24/art_46143_11 de la-S11698560.html", i: "质量奖企业 → 行业标杆企业 → 重点挖掘优质信贷需求。"}
+    ];
+
+    const state = {
+        pFilter: null,
+        vFilter: null
+    };
+
+    function render() {
+        const body = document.getElementById('data-body');
+        body.innerHTML = '';
+
+        let b2gCount = 0, b2bCount = 0, b2cCount = 0;
+
+        const filtered = data.filter(item => {
+            const pMatch = !state.pFilter || item.p === state.pFilter;
+            const vMatch = !state.vFilter || item.v.includes(state.vFilter);
+            return pMatch && vMatch;
+        });
+
+        filtered.forEach(item => {
+            const tr = document.createElement('tr');
+
+            let tags = `<span class="tag tag-${item.p.toLowerCase()}">${item.p}</span>`;
+            item.v.forEach(v => {
+                const label = v === 'b2g' ? 'Bank2Gov' : (v === 'b2b' ? 'Bank2Gov2B' : 'Bank2Gov2C');
+                tags += `<span class="tag tag-${v}">${label}</span>`;
+            });
+
+            const insightClass = item.v[0] === 'b2g' ? 'insight-b2g' : (item.v[0] === 'b2b' ? 'insight-b2b' : (item.v[0] === 'b2c' ? 'insight-b2c' : ''));
+
+            tr.innerHTML = `
+                <td class="date">${item.d}</td>
+                <td>
+                    <a href="${item.u}" target="_blank" class="title-link">${item.t}</a>
+                    <div class="insight ${insightClass}">${item.i}</div>
+                </td>
+                <td>${tags}</td>
+            `;
+            body.appendChild(tr);
+        });
+
+        data.forEach(item => {
+            if(item.v.includes('b2g')) b2gCount++;
+            if(item.v.includes('b2b')) b2bCount++;
+            if(item.v.includes('b2c')) b2cCount++;
+        });
+        document.getElementById('cnt-b2g').innerText = b2gCount;
+        document.getElementById('cnt-b2b').innerText = b2bCount;
+        document.getElementById('cnt-b2c').innerText = b2cCount;
+    }
+
+    document.querySelectorAll('.chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+            const type = chip.dataset.type;
+            if(!type) return;
+
+            if(type.startsWith('p')) {
+                state.pFilter = state.pFilter === type.toUpperCase() ? null : type.toUpperCase();
+                document.querySelectorAll('[data-type^="p"]').forEach(c => c.classList.remove('active'));
+                if(state.pFilter) document.querySelector(`[data-type="${type}"]`).classList.add('active');
+            } else {
+                state.vFilter = state.vFilter === type ? null : type;
+                document.querySelectorAll('[data-type^="b"]').forEach(c => c.classList.remove('active'));
+                if(state.vFilter) document.querySelector(`[data-type="${type}"]`).classList.add('active');
+            }
+            render();
+        });
+    });
+
+    document.getElementById('reset-btn').onclick = () => {
+        state.pFilter = null;
+        state.vFilter = null;
+        document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+        render();
+    };
+
+    render();
+</script>
+</body>
+</html>
