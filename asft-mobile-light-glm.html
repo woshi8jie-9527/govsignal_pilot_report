@@ -338,7 +338,7 @@ section,.layer-expansion,.section-divider{position:relative;z-index:1}
 }
 
 /* ══════ Touch & Long-press Interactions ══════ */
-.scene-card .ink-ripple{
+.ink-ripple{
   position:absolute;border-radius:50%;
   background:radial-gradient(circle,rgba(200,164,100,0.28) 0%,rgba(184,58,43,0.1) 30%,rgba(0,51,102,0.06) 55%,transparent 75%);
   transform:scale(0);pointer-events:none;z-index:3;
@@ -786,7 +786,7 @@ initDivider('divider3');
 // Touch interactions: tap ripple, long-press, global sparkle
 // ═══════════════════════════════════
 (function(){
-  var LP_MS = 250; // long-press threshold
+  var LP_MS = 200; // long-press threshold
   var longPressTimer = null;
   var longPressTarget = null;
 
@@ -799,11 +799,13 @@ initDivider('divider3');
     spark.style.left = x + 'px';
     spark.style.top = y + 'px';
     document.body.appendChild(spark);
-    spark.addEventListener('animationend', function() { spark.remove(); });
+    function remove() { if (spark.parentNode) spark.remove(); }
+    spark.addEventListener('animationend', remove);
+    setTimeout(remove, 1200); // safety net
   }, {passive: true});
 
   // ── Helper: create ink ripple at touch point inside a container ──
-  function createRipple(container, x, y) {
+  window._createRipple = function createRipple(container, x, y) {
     var ripple = document.createElement('div');
     ripple.className = 'ink-ripple';
     ripple.style.left = (x - 30) + 'px';
@@ -811,18 +813,22 @@ initDivider('divider3');
     ripple.style.width = '60px';
     ripple.style.height = '60px';
     container.appendChild(ripple);
-    ripple.addEventListener('animationend', function() { ripple.remove(); });
+    function remove() { if (ripple.parentNode) ripple.remove(); }
+    ripple.addEventListener('animationend', remove);
+    setTimeout(remove, 1200); // safety net
   }
 
   // ── Helper: burst of sparkles around a screen point ──
-  function burstSparkles(cx, cy, count, spread) {
+  window._burstSparkles = function burstSparkles(cx, cy, count, spread) {
     for (var i = 0; i < count; i++) {
       var b = document.createElement('div');
       b.className = 'touch-sparkle';
       b.style.left = (cx + (Math.random() - 0.5) * spread) + 'px';
       b.style.top = (cy + (Math.random() - 0.5) * spread) + 'px';
       document.body.appendChild(b);
-      b.addEventListener('animationend', function() { b.remove(); });
+      function remove() { if (b.parentNode) b.remove(); }
+      b.addEventListener('animationend', remove);
+      setTimeout(remove, 1200); // safety net
     }
   }
 
@@ -946,7 +952,41 @@ initDivider('divider3');
     });
   }, opts);
   cards.forEach(function(c) { cardObs.observe(c); });
+
+  // ═══ Auto-teaser: ripple twice when section scrolls into view ═══
+  var teaserTargets = ['.header', '.onion-viz', '.layer-expansion', '.footer'];
+  var teaserObs = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
+      if (!e.isIntersecting) return;
+      var el = e.target;
+      teaserObs.unobserve(el);
+      var rect = el.getBoundingClientRect();
+      var cx = rect.width / 2, cy = rect.height / 2;
+      // First ripple at center
+      setTimeout(function() { window._createRipple(el, cx, cy); window._burstSparkles(rect.left + cx, rect.top + cy, 1, 20); }, 400);
+      // Second ripple offset, slightly later
+      setTimeout(function() { window._createRipple(el, cx + 30, cy + 10); window._burstSparkles(rect.left + cx + 30, rect.top + cy + 10, 1, 20); }, 900);
+    });
+  }, { threshold: 0.3 });
+  teaserTargets.forEach(function(sel) {
+    var el = document.querySelector(sel);
+    if (el) teaserObs.observe(el);
+  });
+
+  // Cards teaser: each card gets a ripple when it first appears
+  var cardTeaserObs = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
+      if (!e.isIntersecting) return;
+      var card = e.target;
+      cardTeaserObs.unobserve(card);
+      var rect = card.getBoundingClientRect();
+      var cx = rect.width / 2, cy = rect.height / 2;
+      setTimeout(function() { window._createRipple(card, cx, cy); }, 500);
+      setTimeout(function() { window._createRipple(card, cx - 20, cy + 5); }, 1000);
+    });
+  }, { threshold: 0.2 });
+  cards.forEach(function(c) { cardTeaserObs.observe(c); });
 })();
 </script>
-<script>(function(){var s=document.createElement("style");s.textContent=".touch-ripple{position:fixed;border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%) scale(0);background:radial-gradient(circle,rgba(200,164,100,0.3) 0%,rgba(200,164,100,0) 70%)}.touch-ripple.show{animation:touchRippleExpand .5s ease-out forwards} touchRippleExpand{0%{transform:translate(-50%,-50%) scale(0);opacity:1}100%{transform:translate(-50%,-50%) scale(2.5);opacity:0}}.touch-particle{position:fixed;width:3px;height:3px;border-radius:50%;pointer-events:none;z-index:9999;background:#C8A464;opacity:.8}";document.head.appendChild(s);var T=null,L=false,P=400;function R(x,y){var e=document.createElement("div");e.className="touch-ripple show";e.style.left=x+"px";e.style.top=y+"px";e.style.width="60px";e.style.height="60px";document.body.appendChild(e);setTimeout(function(){e.remove()},500)}function B(x,y){for(var i=0;i<8;i++){var e=document.createElement("div");e.className="touch-particle";var a=(Math.PI*2/8)*i,d=30+Math.random()*25;e.style.left=x+"px";e.style.top=y+"px";document.body.appendChild(e);e.getBoundingClientRect();e.style.transition="transform .5s ease-out,opacity .5s ease-out";e.style.transform="translate("+Math.cos(a)*d+"px,"+Math.sin(a)*d+"px) scale(0)";e.style.opacity="0";setTimeout(function(el){return function(){el.remove()}}(e),500)}}document.addEventListener("touchstart",function(e){if(!e.touches.length)return;var t=e.touches[0];L=false;T=setTimeout(function(){L=true;B(t.clientX,t.clientY)},P)},{passive:true});document.addEventListener("touchend",function(e){clearTimeout(T);if(!L&&e.changedTouches.length>0){var t=e.changedTouches[0];var target=document.elementFromPoint(t.clientX,t.clientY);if(target&&target.closest(".scene-card"))return;R(t.clientX,t.clientY)}L=false});document.addEventListener("touchmove",function(){clearTimeout(T);L=false},{passive:true})})()</script></body>
+</body>
 </html>
