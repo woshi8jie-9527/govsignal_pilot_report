@@ -61,10 +61,16 @@ section,.layer-expansion,.section-divider{position:relative;z-index:1}
 
 /* ══════ Header ══════ */
 .header{
-  padding:32px 20px 20px;position:relative;z-index:2;
+  padding:32px 20px 20px;position:relative;z-index:2;overflow:hidden;
   opacity:0;transform:translateY(30px);
   transition:opacity 0.8s ease,transform 0.8s ease;
 }
+.header.long-press{
+  background:rgba(0,240,255,0.04);
+  transition:background 0.3s ease;
+}
+.header.long-press h1{text-shadow:0 0 18px var(--cyan);transition:text-shadow 0.3s ease}
+.header.long-press .sub{color:var(--cyan);opacity:0.7;transition:color 0.3s ease,opacity 0.3s ease}
 .header.visible{opacity:1;transform:translateY(0)}
 
 /* Glitch-style top line */
@@ -123,7 +129,7 @@ section,.layer-expansion,.section-divider{position:relative;z-index:1}
   text-align:center;font-size:11px;color:var(--cyan);letter-spacing:3px;margin-bottom:8px;
   text-shadow:0 0 6px rgba(0,240,255,0.2);
 }
-.onion-viz{position:relative;width:300px;height:300px;margin:0 auto}
+.onion-viz{position:relative;width:300px;height:300px;margin:0 auto;overflow:hidden;border-radius:8px}
 .ring{position:absolute;border-radius:50%;top:50%;left:50%;transform:translate(-50%,-50%)}
 .ring-outer{
   width:280px;height:280px;
@@ -231,13 +237,16 @@ section,.layer-expansion,.section-divider{position:relative;z-index:1}
 
 /* ══════ Layer Expansion ══════ */
 .layer-expansion{
-  position:relative;z-index:2;margin:0 12px 4px;padding:6px 8px 4px;
+  position:relative;z-index:2;margin:0 12px 4px;padding:6px 8px 4px;overflow:hidden;
   background:linear-gradient(180deg,rgba(0,240,255,0.015) 0%,rgba(255,0,170,0.015) 100%);
   border:1px solid var(--border);border-radius:8px;
   opacity:0;transform:translateY(20px);
   transition:opacity 0.6s ease,transform 0.6s ease;
 }
 .layer-expansion.visible{opacity:1;transform:translateY(0)}
+.layer-expansion.long-press{background:linear-gradient(180deg,rgba(0,240,255,0.06) 0%,rgba(255,0,170,0.06) 100%);border-color:var(--cyan);transition:background 0.3s ease,border-color 0.3s ease}
+.layer-expansion.long-press .branch-dot{box-shadow:0 0 12px var(--cyan);transition:box-shadow 0.3s ease}
+.layer-expansion.long-press .branch-label{color:var(--cyan);transition:color 0.3s ease}
 .layer-expansion-inner{position:relative;height:62px}
 
 .layer-expansion .stem{
@@ -366,64 +375,74 @@ section,.layer-expansion,.section-divider{position:relative;z-index:1}
   text-shadow:0 0 20px currentColor;
 }
 
-/* ══════ Touch & Long-press Interactions ══════ */
+/* ══════ Touch & Long-press Interactions (enhanced) ══════ */
 .scene-card .pulse-ring{
   position:absolute;border-radius:50%;
-  border:1px solid var(--accent);
+  border:2.5px solid var(--accent);
   transform:scale(0);pointer-events:none;z-index:3;
-  animation:pulseOut 0.6s ease-out forwards;
+  animation:pulseOut 0.9s ease-out forwards;
 }
 @keyframes pulseOut{
-  0%{transform:scale(0);opacity:0.7}
-  60%{opacity:0.3}
-  100%{transform:scale(3.5);opacity:0}
+  0%{transform:scale(0);opacity:0.85;box-shadow:0 0 8px var(--accent)}
+  40%{opacity:0.45;box-shadow:0 0 14px var(--accent)}
+  100%{transform:scale(7);opacity:0;box-shadow:0 0 0 transparent}
 }
 
-/* Second ring — delayed echo */
+/* Second ring — delayed echo, stronger cyan */
 .scene-card .pulse-ring-echo{
   position:absolute;border-radius:50%;
-  border:1px solid var(--cyan);
+  border:2px solid var(--cyan);
   transform:scale(0);pointer-events:none;z-index:3;
-  animation:pulseEcho 0.8s 0.15s ease-out forwards;
+  animation:pulseEcho 1s 0.18s ease-out forwards;
 }
 @keyframes pulseEcho{
-  0%{transform:scale(0);opacity:0.3}
-  100%{transform:scale(4);opacity:0}
+  0%{transform:scale(0);opacity:0.55;box-shadow:0 0 6px var(--cyan)}
+  50%{opacity:0.2}
+  100%{transform:scale(8);opacity:0}
 }
 
-/* Long-press: card glows bright + border intensifies */
+/* Long-press: card glows bright + border intensifies + triple shadow */
 .scene-card.long-press{
-  transform:scale(1.01) !important;
+  transform:scale(1.025) !important;
   border-color:var(--accent) !important;
-  box-shadow:0 0 24px rgba(0,240,255,0.12),0 0 48px rgba(0,240,255,0.05);
+  box-shadow:0 0 20px rgba(0,240,255,0.2),0 0 44px rgba(0,240,255,0.1),0 0 72px rgba(0,240,255,0.04);
   transition:transform 0.3s ease,box-shadow 0.3s ease,border-color 0.3s ease;
 }
 .scene-card.long-press .card-head .cn{
-  text-shadow:0 0 14px currentColor;
+  text-shadow:0 0 14px currentColor,0 0 28px currentColor;
   transition:text-shadow 0.3s ease;
 }
+.scene-card.long-press .card-head .en{
+  color:var(--accent);transition:color 0.3s ease;
+}
+.scene-card.long-press .card-tags span{
+  background:rgba(0,240,255,0.08);border-color:var(--accent);color:var(--accent);
+  transition:background 0.3s ease,border-color 0.3s ease,color 0.3s ease;
+}
 .scene-card.long-press .border-glow{
-  box-shadow:0 0 12px currentColor,0 0 28px currentColor,0 0 6px currentColor !important;
-  transition:box-shadow 0.3s ease;
+  box-shadow:0 0 16px currentColor,0 0 36px currentColor,0 0 60px currentColor,0 0 8px currentColor !important;
+  width:4px !important;
+  transition:box-shadow 0.3s ease,width 0.3s ease;
 }
 
-/* Onion section long-press: rings pulse faster */
-.onion-section.long-press .ring-outer{animation-duration:2s !important}
-.onion-section.long-press .ring-mid{animation-duration:2s !important}
-.onion-section.long-press .ring-inner-glow{animation-duration:1.5s !important}
+/* Onion section long-press: rings pulse faster + inner glow boost */
+.onion-section.long-press .ring-outer{animation-duration:1.5s !important}
+.onion-section.long-press .ring-mid{animation-duration:1.5s !important}
+.onion-section.long-press .ring-inner-glow{animation-duration:1s !important;box-shadow:0 0 18px rgba(0,240,255,0.5) !important}
 
-/* Global touch sparkle — cyan dot */
+/* Global touch sparkle — enhanced cyan burst */
 .touch-sparkle{
   position:fixed;pointer-events:none;z-index:9999;
-  width:4px;height:4px;border-radius:50%;
-  background:var(--cyan);
-  box-shadow:0 0 6px var(--cyan);
-  animation:sparkleFloat 0.6s ease-out forwards;
+  width:10px;height:10px;border-radius:50%;
+  background:radial-gradient(circle,var(--cyan) 0%,rgba(0,240,255,0.3) 60%,transparent 100%);
+  box-shadow:0 0 12px var(--cyan),0 0 24px rgba(0,240,255,0.3);
+  animation:sparkleFloat 0.85s ease-out forwards;
 }
 @keyframes sparkleFloat{
-  0%{transform:translate(-50%,-50%) scale(0);opacity:0.9}
-  20%{transform:translate(-50%,-80%) scale(1.5);opacity:0.7}
-  100%{transform:translate(-50%,-160%) scale(0.2);opacity:0}
+  0%{transform:translate(-50%,-50%) scale(0);opacity:1}
+  15%{transform:translate(-50%,-100%) scale(1.8);opacity:0.85}
+  50%{transform:translate(-40%,-180%) scale(1);opacity:0.5}
+  100%{transform:translate(-30%,-240%) scale(0.15);opacity:0}
 }
 
 .card-head{display:flex;align-items:baseline;gap:8px;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border)}
@@ -450,11 +469,14 @@ section,.layer-expansion,.section-divider{position:relative;z-index:1}
 /* ══════ Footer ══════ */
 .footer{
   padding:16px 20px calc(16px + var(--safe-bottom));
-  border-top:1px solid var(--border);position:relative;z-index:2;
+  border-top:1px solid var(--border);position:relative;z-index:2;overflow:hidden;
   background:linear-gradient(180deg,transparent 0%,rgba(8,12,20,0.95) 100%);
   opacity:0;transform:translateY(16px);
   transition:opacity 0.6s ease,transform 0.6s ease;
 }
+.footer.long-press{background:rgba(0,240,255,0.06);transition:background 0.3s ease}
+.footer.long-press .version{color:var(--cyan);transition:color 0.3s ease}
+.footer.long-press .footer-seal{border-color:var(--cyan);color:var(--cyan);text-shadow:0 0 10px var(--cyan);transition:border-color 0.3s ease,color 0.3s ease,text-shadow 0.3s ease}
 .footer.visible{opacity:1;transform:translateY(0)}
 .footer .evo{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;font-size:11px;color:var(--text-dim);margin-bottom:6px}
 .footer .evo b{color:var(--cyan);font-size:11px;text-shadow:0 0 4px rgba(0,240,255,0.3)}
@@ -817,6 +839,7 @@ initDivider('divider3');
 // Touch interactions: tap pulse, echo, long-press, global sparkle
 // ═══════════════════════════════════
 (function(){
+  var LP_MS = 250; // long-press threshold
   var longPressTimer = null;
   var longPressTarget = null;
 
@@ -832,74 +855,112 @@ initDivider('divider3');
     spark.addEventListener('animationend', function() { spark.remove(); });
   }, {passive: true});
 
-  // Card: tap pulse + echo + long-press glow
-  document.addEventListener('touchstart', function(e) {
-    var card = e.target.closest('.scene-card');
-    if (!card) return;
-    var rect = card.getBoundingClientRect();
-    var x = e.touches[0].clientX - rect.left;
-    var y = e.touches[0].clientY - rect.top;
-
-    // Primary pulse ring
+  // ── Helper: create pulse rings at touch point inside a container ──
+  function createPulse(container, x, y) {
     var ring = document.createElement('div');
     ring.className = 'pulse-ring';
     ring.style.left = (x - 20) + 'px';
     ring.style.top = (y - 20) + 'px';
     ring.style.width = '40px';
     ring.style.height = '40px';
-    card.appendChild(ring);
+    container.appendChild(ring);
     ring.addEventListener('animationend', function() { ring.remove(); });
 
-    // Echo ring (slightly delayed, cyan color)
     var echo = document.createElement('div');
     echo.className = 'pulse-ring-echo';
     echo.style.left = (x - 24) + 'px';
     echo.style.top = (y - 24) + 'px';
     echo.style.width = '48px';
     echo.style.height = '48px';
-    card.appendChild(echo);
+    container.appendChild(echo);
     echo.addEventListener('animationend', function() { echo.remove(); });
+  }
 
-    // Long-press detection
-    longPressTarget = card;
+  // ── Helper: burst of sparkles around a screen point ──
+  function burstSparkles(cx, cy, count, spread) {
+    for (var i = 0; i < count; i++) {
+      var b = document.createElement('div');
+      b.className = 'touch-sparkle';
+      b.style.left = (cx + (Math.random() - 0.5) * spread) + 'px';
+      b.style.top = (cy + (Math.random() - 0.5) * spread) + 'px';
+      document.body.appendChild(b);
+      b.addEventListener('animationend', function() { b.remove(); });
+    }
+  }
+
+  // ── Helper: start long-press timer on a target ──
+  function startLongPress(target, cx, cy) {
+    longPressTarget = target;
     longPressTimer = setTimeout(function() {
-      card.classList.add('long-press');
-      // Burst of 3 cyan sparkles
-      for (var i = 0; i < 3; i++) {
-        var burst = document.createElement('div');
-        burst.className = 'touch-sparkle';
-        burst.style.left = (e.touches[0].clientX + (Math.random() - 0.5) * 40) + 'px';
-        burst.style.top = (e.touches[0].clientY + (Math.random() - 0.5) * 40) + 'px';
-        document.body.appendChild(burst);
-        burst.addEventListener('animationend', function() { burst.remove(); });
-      }
-    }, 500);
-  }, {passive: true});
+      target.classList.add('long-press');
+      burstSparkles(cx, cy, 3, 40);
+    }, LP_MS);
+  }
 
-  document.addEventListener('touchend', function() {
+  // ── Helper: cancel long-press ──
+  function cancelLongPress() {
     if (longPressTimer) clearTimeout(longPressTimer);
     if (longPressTarget) {
       longPressTarget.classList.remove('long-press');
       longPressTarget = null;
     }
+  }
+
+  // ═══ Card: tap pulse + echo + long-press glow ═══
+  document.addEventListener('touchstart', function(e) {
+    var card = e.target.closest('.scene-card');
+    if (!card) return;
+    var rect = card.getBoundingClientRect();
+    createPulse(card, e.touches[0].clientX - rect.left, e.touches[0].clientY - rect.top);
+    startLongPress(card, e.touches[0].clientX, e.touches[0].clientY);
   }, {passive: true});
 
-  document.addEventListener('touchmove', function() {
-    if (longPressTimer) clearTimeout(longPressTimer);
-    if (longPressTarget) {
-      longPressTarget.classList.remove('long-press');
-      longPressTarget = null;
-    }
+  // ═══ Header: tap pulse + long-press glow ═══
+  document.addEventListener('touchstart', function(e) {
+    var header = e.target.closest('.header');
+    if (!header) return;
+    var rect = header.getBoundingClientRect();
+    createPulse(header, e.touches[0].clientX - rect.left, e.touches[0].clientY - rect.top);
+    startLongPress(header, e.touches[0].clientX, e.touches[0].clientY);
   }, {passive: true});
 
-  // Onion section long-press: accelerate ring breathing
+  // ═══ Layer Expansion: tap pulse + long-press glow ═══
+  document.addEventListener('touchstart', function(e) {
+    var layer = e.target.closest('.layer-expansion');
+    if (!layer) return;
+    var rect = layer.getBoundingClientRect();
+    createPulse(layer, e.touches[0].clientX - rect.left, e.touches[0].clientY - rect.top);
+    startLongPress(layer, e.touches[0].clientX, e.touches[0].clientY);
+  }, {passive: true});
+
+  // ═══ Footer: tap pulse + long-press glow ═══
+  document.addEventListener('touchstart', function(e) {
+    var footer = e.target.closest('.footer');
+    if (!footer) return;
+    var rect = footer.getBoundingClientRect();
+    createPulse(footer, e.touches[0].clientX - rect.left, e.touches[0].clientY - rect.top);
+    startLongPress(footer, e.touches[0].clientX, e.touches[0].clientY);
+  }, {passive: true});
+
+  // Global end / move → cancel long-press
+  document.addEventListener('touchend', cancelLongPress, {passive: true});
+  document.addEventListener('touchmove', cancelLongPress, {passive: true});
+
+  // ═══ Onion section long-press: accelerate ring breathing ═══
   var onionLongPress = null;
   var onionEl = document.querySelector('.onion-section');
   if (onionEl) {
-    onionEl.addEventListener('touchstart', function() {
+    onionEl.addEventListener('touchstart', function(e) {
+      // Pulse on onion viz
+      var viz = e.target.closest('.onion-viz');
+      if (viz) {
+        var rect = viz.getBoundingClientRect();
+        createPulse(viz, e.touches[0].clientX - rect.left, e.touches[0].clientY - rect.top);
+      }
       onionLongPress = setTimeout(function() {
         onionEl.classList.add('long-press');
-      }, 500);
+        burstSparkles(e.touches[0].clientX, e.touches[0].clientY, 2, 50);
+      }, LP_MS);
     }, {passive: true});
     onionEl.addEventListener('touchend', function() {
       if (onionLongPress) clearTimeout(onionLongPress);

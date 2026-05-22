@@ -61,10 +61,16 @@ section,.layer-expansion,.section-divider{position:relative;z-index:1}
 
 /* ══════ Header ══════ */
 .header{
-  padding:32px 20px 20px;position:relative;z-index:2;
+  padding:32px 20px 20px;position:relative;z-index:2;overflow:hidden;
   opacity:0;transform:translateY(30px);
   transition:opacity 0.8s ease,transform 0.8s ease;
 }
+.header.long-press{
+  background:rgba(200,164,100,0.06);
+  transition:background 0.3s ease;
+}
+.header.long-press h1{color:var(--ccb-gold);transition:color 0.3s ease}
+.header.long-press .sub{color:var(--ccb-gold);opacity:0.7;transition:color 0.3s ease,opacity 0.3s ease}
 .header.visible{opacity:1;transform:translateY(0)}
 
 .header h1{
@@ -121,7 +127,7 @@ section,.layer-expansion,.section-divider{position:relative;z-index:1}
 .onion-section .section-label{
   text-align:center;font-size:11px;color:#AAA;letter-spacing:1px;margin-bottom:8px;
 }
-.onion-viz{position:relative;width:300px;height:300px;margin:0 auto}
+.onion-viz{position:relative;width:300px;height:300px;margin:0 auto;overflow:hidden;border-radius:8px}
 .ring{position:absolute;border-radius:50%;top:50%;left:50%;transform:translate(-50%,-50%)}
 .ring-outer{width:280px;height:280px;border:1px solid rgba(0,51,102,0.12)}
 .ring-mid{width:180px;height:180px;border:1.5px dashed rgba(90,125,154,0.35)}
@@ -212,12 +218,15 @@ section,.layer-expansion,.section-divider{position:relative;z-index:1}
 
 /* ══════ Layer Expansion ══════ */
 .layer-expansion{
-  position:relative;z-index:2;margin:0 12px 4px;padding:6px 8px 4px;
+  position:relative;z-index:2;margin:0 12px 4px;padding:6px 8px 4px;overflow:hidden;
   background:linear-gradient(180deg,rgba(200,164,100,0.03) 0%,rgba(200,164,100,0.06) 70%,transparent 100%);
   border-radius:8px;opacity:0;transform:translateY(20px);
   transition:opacity 0.6s ease,transform 0.6s ease;
 }
 .layer-expansion.visible{opacity:1;transform:translateY(0)}
+.layer-expansion.long-press{background:linear-gradient(180deg,rgba(200,164,100,0.08) 0%,rgba(200,164,100,0.12) 70%,transparent 100%);transition:background 0.3s ease}
+.layer-expansion.long-press .branch-dot{box-shadow:0 0 10px var(--ccb-gold);transition:box-shadow 0.3s ease}
+.layer-expansion.long-press .branch-label{color:var(--ccb-gold);transition:color 0.3s ease}
 .layer-expansion-inner{position:relative;height:62px}
 
 .layer-expansion .stem{
@@ -331,43 +340,59 @@ section,.layer-expansion,.section-divider{position:relative;z-index:1}
 /* ══════ Touch & Long-press Interactions ══════ */
 .scene-card .ink-ripple{
   position:absolute;border-radius:50%;
-  background:radial-gradient(circle,rgba(200,164,100,0.15) 0%,rgba(0,51,102,0.06) 40%,transparent 70%);
+  background:radial-gradient(circle,rgba(200,164,100,0.28) 0%,rgba(184,58,43,0.1) 30%,rgba(0,51,102,0.06) 55%,transparent 75%);
   transform:scale(0);pointer-events:none;z-index:3;
-  animation:rippleOut 0.7s ease-out forwards;
+  animation:rippleOut 0.9s ease-out forwards;
 }
-@keyframes rippleOut{0%{transform:scale(0);opacity:1}100%{transform:scale(5);opacity:0}}
+@keyframes rippleOut{0%{transform:scale(0);opacity:1}40%{opacity:0.8}100%{transform:scale(8);opacity:0}}
 
 /* Long-press: card lifts with warm glow */
 .scene-card.long-press{
-  transform:scale(1.01) !important;
-  box-shadow:0 4px 20px rgba(200,164,100,0.18),0 0 0 2px rgba(200,164,100,0.12);
-  transition:transform 0.3s ease,box-shadow 0.3s ease;
+  transform:scale(1.025) !important;
+  box-shadow:0 6px 28px rgba(200,164,100,0.28),0 0 0 3px rgba(200,164,100,0.18),0 0 40px rgba(184,58,43,0.08);
+  transition:transform 0.35s ease,box-shadow 0.35s ease;
 }
 .scene-card.long-press .card-head .cn{
-  filter:brightness(1.1);
-  transition:filter 0.3s ease;
+  filter:brightness(1.25);
+  transition:filter 0.35s ease;
+}
+.scene-card.long-press .card-head .en{
+  color:#999;
+  transition:color 0.35s ease;
 }
 .scene-card.long-press .card-border-ink{
-  box-shadow:0 0 8px rgba(200,164,100,0.25);
-  transition:box-shadow 0.3s ease;
+  box-shadow:0 0 14px rgba(200,164,100,0.4),0 0 4px rgba(184,58,43,0.2);
+  width:5px;
+  transition:box-shadow 0.35s ease,width 0.35s ease;
+}
+.scene-card.long-press .card-tags span{
+  background:rgba(200,164,100,0.12);
+  border-color:rgba(200,164,100,0.25);
+  transition:background 0.35s ease,border-color 0.35s ease;
 }
 
-/* Onion section long-press: rings pulse faster */
-.onion-section.long-press .ring-outer{animation-duration:2s !important}
-.onion-section.long-press .ring-mid{animation-duration:2s !important}
-.onion-section.long-press .ring-inner-glow{animation-duration:1.5s !important}
+/* Onion section long-press: rings pulse faster + core glows */
+.onion-section.long-press .ring-outer{animation-duration:1.5s !important}
+.onion-section.long-press .ring-mid{animation-duration:1.5s !important}
+.onion-section.long-press .ring-inner-glow{animation-duration:1s !important}
+.onion-section.long-press .ring-inner{
+  box-shadow:0 0 30px rgba(200,164,100,0.25),0 0 60px rgba(0,51,102,0.15);
+  transition:box-shadow 0.4s ease;
+}
 
-/* Global touch sparkle — floating gold dot */
+/* Global touch sparkle — floating gold dot with trail */
 .touch-sparkle{
   position:fixed;pointer-events:none;z-index:9999;
-  width:6px;height:6px;border-radius:50%;
-  background:var(--ccb-gold);
-  animation:sparkleFloat 0.8s ease-out forwards;
+  width:10px;height:10px;border-radius:50%;
+  background:radial-gradient(circle,var(--ccb-gold) 30%,rgba(200,164,100,0.4) 60%,transparent 100%);
+  box-shadow:0 0 8px rgba(200,164,100,0.35);
+  animation:sparkleFloat 1s ease-out forwards;
 }
 @keyframes sparkleFloat{
-  0%{transform:translate(-50%,-50%) scale(0);opacity:0.8}
-  30%{transform:translate(-50%,-80%) scale(1.2);opacity:0.6}
-  100%{transform:translate(-50%,-140%) scale(0.3);opacity:0}
+  0%{transform:translate(-50%,-50%) scale(0);opacity:1}
+  15%{transform:translate(-50%,-60%) scale(1.8);opacity:0.9}
+  40%{transform:translate(-50%,-120%) scale(1);opacity:0.6}
+  100%{transform:translate(-50%,-200%) scale(0.2);opacity:0}
 }
 
 .scene-card::after{
@@ -397,11 +422,14 @@ section,.layer-expansion,.section-divider{position:relative;z-index:1}
 /* ══════ Footer ══════ */
 .footer{
   padding:16px 20px calc(16px + var(--safe-bottom));
-  border-top:1px solid var(--line);position:relative;z-index:2;
+  border-top:1px solid var(--line);position:relative;z-index:2;overflow:hidden;
   background:linear-gradient(180deg,transparent 0%,rgba(250,248,244,0.9) 100%);
   opacity:0;transform:translateY(16px);
   transition:opacity 0.6s ease,transform 0.6s ease;
 }
+.footer.long-press{background:rgba(200,164,100,0.08);transition:background 0.3s ease}
+.footer.long-press .version{color:var(--ccb-gold);transition:color 0.3s ease}
+.footer.long-press .footer-seal{border-color:var(--ccb-gold);color:var(--ccb-gold);transition:border-color 0.3s ease,color 0.3s ease}
 .footer.visible{opacity:1;transform:translateY(0)}
 .footer .evo{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;font-size:11px;color:#999;margin-bottom:6px}
 .footer .evo b{color:#777;font-size:11px}
@@ -758,6 +786,7 @@ initDivider('divider3');
 // Touch interactions: tap ripple, long-press, global sparkle
 // ═══════════════════════════════════
 (function(){
+  var LP_MS = 250; // long-press threshold
   var longPressTimer = null;
   var longPressTarget = null;
 
@@ -773,64 +802,103 @@ initDivider('divider3');
     spark.addEventListener('animationend', function() { spark.remove(); });
   }, {passive: true});
 
-  // Card: tap ripple + long-press lift
-  document.addEventListener('touchstart', function(e) {
-    var card = e.target.closest('.scene-card');
-    if (!card) return;
-    var rect = card.getBoundingClientRect();
-    var x = e.touches[0].clientX - rect.left;
-    var y = e.touches[0].clientY - rect.top;
-
-    // Ink ripple
+  // ── Helper: create ink ripple at touch point inside a container ──
+  function createRipple(container, x, y) {
     var ripple = document.createElement('div');
     ripple.className = 'ink-ripple';
     ripple.style.left = (x - 30) + 'px';
     ripple.style.top = (y - 30) + 'px';
     ripple.style.width = '60px';
     ripple.style.height = '60px';
-    card.appendChild(ripple);
+    container.appendChild(ripple);
     ripple.addEventListener('animationend', function() { ripple.remove(); });
+  }
 
-    // Long-press detection
-    longPressTarget = card;
+  // ── Helper: burst of sparkles around a screen point ──
+  function burstSparkles(cx, cy, count, spread) {
+    for (var i = 0; i < count; i++) {
+      var b = document.createElement('div');
+      b.className = 'touch-sparkle';
+      b.style.left = (cx + (Math.random() - 0.5) * spread) + 'px';
+      b.style.top = (cy + (Math.random() - 0.5) * spread) + 'px';
+      document.body.appendChild(b);
+      b.addEventListener('animationend', function() { b.remove(); });
+    }
+  }
+
+  // ── Helper: start long-press timer on a target ──
+  function startLongPress(target, cx, cy) {
+    longPressTarget = target;
     longPressTimer = setTimeout(function() {
-      card.classList.add('long-press');
-      // Extra: burst of 3 sparkles around press point
-      for (var i = 0; i < 3; i++) {
-        var burst = document.createElement('div');
-        burst.className = 'touch-sparkle';
-        burst.style.left = (e.touches[0].clientX + (Math.random() - 0.5) * 30) + 'px';
-        burst.style.top = (e.touches[0].clientY + (Math.random() - 0.5) * 30) + 'px';
-        document.body.appendChild(burst);
-        burst.addEventListener('animationend', function() { burst.remove(); });
-      }
-    }, 500);
-  }, {passive: true});
+      target.classList.add('long-press');
+      burstSparkles(cx, cy, 3, 30);
+    }, LP_MS);
+  }
 
-  document.addEventListener('touchend', function() {
+  // ── Helper: cancel long-press ──
+  function cancelLongPress() {
     if (longPressTimer) clearTimeout(longPressTimer);
     if (longPressTarget) {
       longPressTarget.classList.remove('long-press');
       longPressTarget = null;
     }
+  }
+
+  // ═══ Card: tap ripple + long-press lift ═══
+  document.addEventListener('touchstart', function(e) {
+    var card = e.target.closest('.scene-card');
+    if (!card) return;
+    var rect = card.getBoundingClientRect();
+    createRipple(card, e.touches[0].clientX - rect.left, e.touches[0].clientY - rect.top);
+    startLongPress(card, e.touches[0].clientX, e.touches[0].clientY);
   }, {passive: true});
 
-  document.addEventListener('touchmove', function() {
-    if (longPressTimer) clearTimeout(longPressTimer);
-    if (longPressTarget) {
-      longPressTarget.classList.remove('long-press');
-      longPressTarget = null;
-    }
+  // ═══ Header: tap ripple + long-press glow ═══
+  document.addEventListener('touchstart', function(e) {
+    var header = e.target.closest('.header');
+    if (!header) return;
+    var rect = header.getBoundingClientRect();
+    createRipple(header, e.touches[0].clientX - rect.left, e.touches[0].clientY - rect.top);
+    startLongPress(header, e.touches[0].clientX, e.touches[0].clientY);
   }, {passive: true});
 
-  // Onion section long-press: accelerate breathing
+  // ═══ Layer Expansion: tap ripple + long-press glow ═══
+  document.addEventListener('touchstart', function(e) {
+    var layer = e.target.closest('.layer-expansion');
+    if (!layer) return;
+    var rect = layer.getBoundingClientRect();
+    createRipple(layer, e.touches[0].clientX - rect.left, e.touches[0].clientY - rect.top);
+    startLongPress(layer, e.touches[0].clientX, e.touches[0].clientY);
+  }, {passive: true});
+
+  // ═══ Footer: tap ripple + long-press glow ═══
+  document.addEventListener('touchstart', function(e) {
+    var footer = e.target.closest('.footer');
+    if (!footer) return;
+    var rect = footer.getBoundingClientRect();
+    createRipple(footer, e.touches[0].clientX - rect.left, e.touches[0].clientY - rect.top);
+    startLongPress(footer, e.touches[0].clientX, e.touches[0].clientY);
+  }, {passive: true});
+
+  // Global end / move → cancel long-press
+  document.addEventListener('touchend', cancelLongPress, {passive: true});
+  document.addEventListener('touchmove', cancelLongPress, {passive: true});
+
+  // ═══ Onion section long-press: accelerate breathing ═══
   var onionLongPress = null;
   var onionEl = document.querySelector('.onion-section');
   if (onionEl) {
-    onionEl.addEventListener('touchstart', function() {
+    onionEl.addEventListener('touchstart', function(e) {
+      // Ripple on onion viz
+      var viz = e.target.closest('.onion-viz');
+      if (viz) {
+        var rect = viz.getBoundingClientRect();
+        createRipple(viz, e.touches[0].clientX - rect.left, e.touches[0].clientY - rect.top);
+      }
       onionLongPress = setTimeout(function() {
         onionEl.classList.add('long-press');
-      }, 500);
+        burstSparkles(e.touches[0].clientX, e.touches[0].clientY, 2, 40);
+      }, LP_MS);
     }, {passive: true});
     onionEl.addEventListener('touchend', function() {
       if (onionLongPress) clearTimeout(onionLongPress);
